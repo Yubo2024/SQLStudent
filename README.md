@@ -80,4 +80,83 @@ class StudentDatabaseHelper(context: Context) :
     }
 }
 
+class MainActivity : AppCompatActivity() {
+
+    private lateinit var dbHelper: StudentDatabaseHelper
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        dbHelper = StudentDatabaseHelper(this)
+
+        // 获取 UI 控件
+        val nameInput = findViewById<EditText>(R.id.nameInput)
+        val ageInput = findViewById<EditText>(R.id.ageInput)
+        val idInput = findViewById<EditText>(R.id.idInput)
+
+        val btnAdd = findViewById<Button>(R.id.btnAdd)
+        val btnView = findViewById<Button>(R.id.btnView)
+        val btnUpdate = findViewById<Button>(R.id.btnUpdate)
+        val btnDelete = findViewById<Button>(R.id.btnDelete)
+        val btnClearAll = findViewById<Button>(R.id.btnClearAll)
+
+        // 添加学生
+        btnAdd.setOnClickListener {
+            val name = nameInput.text.toString()
+            val age = ageInput.text.toString().toIntOrNull()
+            if (name.isNotEmpty() && age != null) {
+                val success = dbHelper.insertStudent(name, age)
+                showToast(if (success) "Student added" else "Insert failed")
+            } else {
+                showToast("Please enter valid name and age")
+            }
+        }
+
+        // 显示全部学生
+        btnView.setOnClickListener {
+            val data = dbHelper.getAllStudents()
+            AlertDialog.Builder(this)
+                .setTitle("All Students")
+                .setMessage(if (data.isNotEmpty()) data else "No data found")
+                .setPositiveButton("OK", null)
+                .show()
+        }
+
+        // 更新学生信息
+        btnUpdate.setOnClickListener {
+            val id = idInput.text.toString().toIntOrNull()
+            val name = nameInput.text.toString()
+            val age = ageInput.text.toString().toIntOrNull()
+            if (id != null && name.isNotEmpty() && age != null) {
+                val success = dbHelper.updateStudent(id, name, age)
+                showToast(if (success) "Student updated" else "Update failed")
+            } else {
+                showToast("Please enter valid ID, name and age")
+            }
+        }
+
+        // 删除学生信息
+        btnDelete.setOnClickListener {
+            val id = idInput.text.toString().toIntOrNull()
+            if (id != null) {
+                val success = dbHelper.deleteStudent(id)
+                showToast(if (success) "Student deleted" else "Delete failed")
+            } else {
+                showToast("Please enter valid ID")
+            }
+        }
+
+        // 清空数据并重置 ID
+        btnClearAll.setOnClickListener {
+            val success = dbHelper.deleteAllStudentsAndResetId()
+            showToast(if (success) "All students deleted and ID reset" else "Reset failed")
+        }
+    }
+
+    // 快捷 Toast 提示方法
+    private fun showToast(msg: String) {
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+    }
+}
+
 
